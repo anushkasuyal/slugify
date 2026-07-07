@@ -1,6 +1,7 @@
 # slugify
 
 A small Python CLI for renaming files and directories into lowercase, hyphen-separated, ASCII-friendly names.
+I usually use this as a pre-processing step before copying over files/folders from Windows to WSL!
 
 ## Install
 
