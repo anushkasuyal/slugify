@@ -67,3 +67,30 @@ def test_recursive_apply_visits_subdirectories(tmp_path):
     assert exit_code == 0
     assert (target / "my-folder").exists()
     assert (target / "my-folder" / "resume.txt").exists()
+
+
+def test_apply_reports_permission_errors_and_continues(tmp_path, capsys, monkeypatch):
+    target = tmp_path / "demo"
+    target.mkdir()
+    (target / "Résumé.txt").write_text("x")
+    (target / "space name.txt").write_text("y")
+
+    original_rename = Path.rename
+
+    def failing_rename(self, target_path):
+        if self.name == "Résumé.txt":
+            raise PermissionError("Access denied")
+        return original_rename(self, target_path)
+
+    monkeypatch.setattr(Path, "rename", failing_rename)
+
+    import sys
+
+    sys.argv = ["slugify", str(target), "--apply"]
+    exit_code = main()
+
+    captured = capsys.readouterr()
+    assert exit_code == 0
+    assert "PermissionError" in captured.err
+    assert (target / "Résumé.txt").exists()
+    assert (target / "space-name.txt").exists()

@@ -81,7 +81,13 @@ def process_directory(path: Path, recursive: bool, apply: bool, keep_case: bool)
             action = "Renamed" if apply else "Would rename"
             print(f"{action}: {entry.name} -> {target_name}")
             if apply:
-                source.rename(destination)
+                try:
+                    source.rename(destination)
+                except OSError as exc:
+                    print(
+                        f"Failed to rename {entry.name} -> {target_name}: {exc.__class__.__name__}: {exc}",
+                        file=sys.stderr,
+                    )
 
     if recursive:
         for child in sorted(path.iterdir(), key=lambda item: item.name):
